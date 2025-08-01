@@ -281,9 +281,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📞 Contact & Support
 
-**Project Maintainer**: [Your Name]
-**Email**: [your.email@example.com]
-**GitHub**: [Your GitHub Profile]
+**Project Maintainer**: [Arhaan Ali]
+**Email**: [arhaan.ali2004@gmail.com]
+**GitHub**: [https://github.com/ArhaanAli04]
 
 ### Getting Help
 - **Issues**: Report bugs and request features via GitHub Issues
