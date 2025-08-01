@@ -1,7 +1,7 @@
 import random
 import logging
 from typing import Dict, List, Optional
-
+from hybrid_response_generator import hybrid_generator
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -160,6 +160,8 @@ class AdvancedTherapyResponseGenerator:
                 "How might accepting these feelings, rather than fighting them, change your experience?"
             ]
         }
+
+    
 
     def generate_contextual_response(self, nlp_result: Dict, session_context: Dict) -> str:
         """Generate response based on NLP analysis and session context"""
@@ -442,3 +444,19 @@ advanced_therapy_responder = AdvancedTherapyResponseGenerator()
 def generate_advanced_therapy_response(nlp_result: Dict, session_context: Dict) -> str:
     """Generate contextual therapy response with session awareness"""
     return advanced_therapy_responder.generate_contextual_response(nlp_result, session_context)
+
+def generate_hybrid_therapy_response(nlp_result: Dict, session_context: Dict) -> str:
+        """Generate response using hybrid approach"""
+        user_input = nlp_result.get('original_text', '')
+        
+        # Determine strategy: rule-based vs AI generation
+        strategy = hybrid_generator.determine_response_strategy(user_input, nlp_result, session_context)
+        
+        logger.info(f"Using {strategy} strategy for: {user_input[:50]}...")
+        
+        if strategy == 'rule_based':
+            # Use your existing advanced template system for simple cases
+            return advanced_therapy_responder.generate_contextual_response(nlp_result, session_context)
+        else:
+            # Use AI generation for complex cases
+            return hybrid_generator.generate_with_transformer(user_input, nlp_result, session_context)

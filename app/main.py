@@ -10,6 +10,7 @@ import logging
 import os
 from dotenv import load_dotenv
 load_dotenv()
+from therapy_responses import generate_hybrid_therapy_response
 # Set up logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -94,7 +95,7 @@ def continue_session():
         context = therapy_session.get_conversation_context()
         
         # Step 4: Generate contextual therapy response
-        ai_response = generate_advanced_therapy_response(nlp_result, context)
+        ai_response = generate_hybrid_therapy_response(nlp_result, context)
         
         # Step 5: Add to session history
         therapy_session.add_exchange(user_input, nlp_result, ai_response)
