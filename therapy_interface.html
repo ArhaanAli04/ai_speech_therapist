@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Speech Therapist - Professional Interface</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f7fa;
+            color: #333;
+        }
+        
+        .header {
+            text-align: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        .main-container {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 30px;
+        }
+        
+        .chat-container {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        .status-panel {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            height: fit-content;
+        }
+        
+        .conversation {
+            height: 500px;
+            overflow-y: auto;
+            border: 1px solid #e1e5e9;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            background-color: #fafbfc;
+        }
+        
+        .message {
+            margin: 15px 0;
+            padding: 15px;
+            border-radius: 10px;
+            max-width: 80%;
+            word-wrap: break-word;
+        }
+        
+        .user-message {
+            background: #007bff;
+            color: white;
+            margin-left: auto;
+            text-align: right;
+        }
+        
+        .ai-message {
+            background: #e9ecef;
+            color: #333;
+            border-left: 4px solid #28a745;
+        }
+        
+        .system-message {
+            background: #fff3cd;
+            color: #856404;
+            text-align: center;
+            font-style: italic;
+        }
+        
+        .input-section {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        input[type="text"] {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+        
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .primary-btn {
+            background: #007bff;
+            color: white;
+        }
+        
+        .primary-btn:hover {
+            background: #0056b3;
+        }
+        
+        .voice-btn {
+            background: #28a745;
+            color: white;
+        }
+        
+        .voice-btn:hover {
+            background: #1e7e34;
+        }
+        
+        .danger-btn {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .status-item {
+            margin: 10px 0;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 5px;
+            border-left: 3px solid #007bff;
+        }
+        
+        .sentiment-indicator {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        
+        .sentiment-positive { background: #d4edda; color: #155724; }
+        .sentiment-negative { background: #f8d7da; color: #721c24; }
+        .sentiment-neutral { background: #e2e3e5; color: #383d41; }
+        
+        .listening-indicator {
+            display: none;
+            text-align: center;
+            color: #28a745;
+            font-weight: bold;
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        
+        .summary-section {
+            margin-top: 20px;
+            padding: 15px;
+            background: #e7f3ff;
+            border-radius: 8px;
+            border-left: 4px solid #007bff;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🧠 AI Speech Therapist</h1>
+        <p>Professional AI-Powered Therapy Assistant with Advanced Conversation Memory</p>
+    </div>
+    
+    <div class="main-container">
+        <div class="chat-container">
+            <h2>Therapy Session</h2>
+            <div id="conversation" class="conversation"></div>
+            <div id="listeningIndicator" class="listening-indicator">
+                🎤 Listening... Please speak now
+            </div>
+            
+            <div class="input-section">
+                <input type="text" id="messageInput" placeholder="Type your message or use voice input..." />
+                <button onclick="sendTextMessage()" class="primary-btn">Send</button>
+                <button onclick="startVoiceSession()" class="voice-btn" id="voiceBtn">🎤 Voice</button>
+            </div>
+            
+            <div style="text-align: center; margin-top: 15px;">
+                <button onclick="startNewSession()" class="primary-btn">New Session</button>
+                <button onclick="endSession()" class="danger-btn">End Session</button>
+                <button onclick="getSessionSummary()" class="primary-btn">Session Summary</button>
+            </div>
+        </div>
+        
+        <div class="status-panel">
+            <h3>Session Status</h3>
+            <div class="status-item">
+                <strong>Session ID:</strong><br>
+                <span id="sessionId">Not started</span>
+            </div>
+            <div class="status-item">
+                <strong>Messages:</strong> <span id="messageCount">0</span>
+            </div>
+            <div class="status-item">
+                <strong>Duration:</strong> <span id="sessionDuration">00:00</span>
+            </div>
+            <div class="status-item">
+                <strong>Dominant Sentiment:</strong><br>
+                <span id="dominantSentiment" class="sentiment-indicator sentiment-neutral">Neutral</span>
+            </div>
+            <div class="status-item">
+                <strong>Main Topics:</strong><br>
+                <span id="mainTopics">None yet</span>
+            </div>
+            
+            <div id="summarySection" class="summary-section" style="display: none;">
+                <h4>Session Summary</h4>
+                <div id="summaryContent"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentSession = null;
+        let sessionStartTime = null;
+        let durationTimer = null;
+        
+        async function startNewSession() {
+            try {
+                showSystemMessage('Starting new therapy session...');
+                
+                const response = await fetch('http://localhost:5000/start-therapy-session', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'}
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    currentSession = data.session_id;
+                    sessionStartTime = new Date();
+                    updateSessionStatus();
+                    startDurationTimer();
+                    
+                    addMessage('AI Therapist', data.welcome_message, 'ai');
+                    document.getElementById('summarySection').style.display = 'none';
+                    
+                    showSystemMessage('Session started successfully. You can now chat via text or voice.');
+                } else {
+                    throw new Error(data.error);
+                }
+            } catch (error) {
+                console.error('Error starting session:', error);
+                showSystemMessage('Error starting session: ' + error.message);
+            }
+        }
+        
+        async function sendTextMessage() {
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            if (!currentSession) {
+                await startNewSession();
+                if (!currentSession) return;
+            }
+            
+            try {
+                addMessage('You', message, 'user');
+                input.value = '';
+                
+                const response = await fetch('http://localhost:5000/text-therapy', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        text: message,
+                        session_id: currentSession
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    addMessage('AI Therapist', data.ai_response, 'ai');
+                    updateSessionStatus(data);
+                } else {
+                    throw new Error(data.error);
+                }
+            } catch (error) {
+                console.error('Error sending message:', error);
+                showSystemMessage('Error: ' + error.message);
+            }
+        }
+        
+        async function startVoiceSession() {
+            if (!currentSession) {
+                await startNewSession();
+                if (!currentSession) return;
+            }
+            
+            try {
+                const voiceBtn = document.getElementById('voiceBtn');
+                const listeningIndicator = document.getElementById('listeningIndicator');
+                
+                voiceBtn.disabled = true;
+                voiceBtn.textContent = '🔄 Processing...';
+                listeningIndicator.style.display = 'block';
+                
+                showSystemMessage('Starting voice interaction...');
+                
+                const response = await fetch('http://localhost:5000/complete-voice-therapy', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        session_id: currentSession,
+                        timeout: 12,
+                        phrase_time_limit: 20
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    const exchange = data.conversation_exchange;
+                    addMessage('You', exchange.user_input, 'user');
+                    addMessage('AI Therapist', exchange.ai_response, 'ai');
+                    updateSessionStatus(data);
+                    showSystemMessage('Voice interaction completed successfully.');
+                } else {
+                    showSystemMessage('Voice error: ' + (data.gentle_error || data.error));
+                }
+            } catch (error) {
+                console.error('Error in voice session:', error);
+                showSystemMessage('Voice interaction failed: ' + error.message);
+            } finally {
+                const voiceBtn = document.getElementById('voiceBtn');
+                const listeningIndicator = document.getElementById('listeningIndicator');
+                
+                voiceBtn.disabled = false;
+                voiceBtn.textContent = '🎤 Voice';
+                listeningIndicator.style.display = 'none';
+            }
+        }
+        
+        async function endSession() {
+            if (!currentSession) return;
+            
+            try {
+                await getSessionSummary();
+                
+                const response = await fetch(`http://localhost:5000/end-session/${currentSession}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    showSystemMessage('Session ended. Thank you for using AI Speech Therapist.');
+                    currentSession = null;
+                    sessionStartTime = null;
+                    clearInterval(durationTimer);
+                    updateSessionStatus();
+                } else {
+                    throw new Error(data.error);
+                }
+            } catch (error) {
+                console.error('Error ending session:', error);
+                showSystemMessage('Error ending session: ' + error.message);
+            }
+        }
+        
+        async function getSessionSummary() {
+            if (!currentSession) return;
+            
+            try {
+                const response = await fetch(`http://localhost:5000/session-summary/${currentSession}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    displaySessionSummary(data.session_summary);
+                } else {
+                    throw new Error(data.error);
+                }
+            } catch (error) {
+                console.error('Error getting summary:', error);
+                showSystemMessage('Error getting session summary: ' + error.message);
+            }
+        }
+        
+        function displaySessionSummary(summary) {
+            const summarySection = document.getElementById('summarySection');
+            const summaryContent = document.getElementById('summaryContent');
+            
+            summaryContent.innerHTML = `
+                <p><strong>Duration:</strong> ${summary.session_duration}</p>
+                <p><strong>Total Messages:</strong> ${summary.total_exchanges}</p>
+                <p><strong>Main Topics:</strong> ${summary.main_topics.join(', ') || 'General conversation'}</p>
+                <p><strong>Emotional Tone:</strong> ${summary.dominant_sentiment}</p>
+                ${summary.therapeutic_insights ? `
+                    <p><strong>Insights:</strong></p>
+                    <ul>${summary.therapeutic_insights.map(insight => `<li>${insight}</li>`).join('')}</ul>
+                ` : ''}
+                ${summary.progress_observations ? `
+                    <p><strong>Observations:</strong></p>
+                    <ul>${summary.progress_observations.map(obs => `<li>${obs}</li>`).join('')}</ul>
+                ` : ''}
+            `;
+            
+            summarySection.style.display = 'block';
+        }
+        
+        function addMessage(sender, message, type) {
+            const conversation = document.getElementById('conversation');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}-message`;
+            
+            const timestamp = new Date().toLocaleTimeString();
+            messageDiv.innerHTML = `
+                <div style="font-weight: bold; margin-bottom: 5px;">${sender}</div>
+                <div>${message}</div>
+                <div style="font-size: 12px; opacity: 0.7; margin-top: 5px;">${timestamp}</div>
+            `;
+            
+            conversation.appendChild(messageDiv);
+            conversation.scrollTop = conversation.scrollHeight;
+        }
+        
+        function showSystemMessage(message) {
+            const conversation = document.getElementById('conversation');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message system-message';
+            messageDiv.textContent = message;
+            
+            conversation.appendChild(messageDiv);
+            conversation.scrollTop = conversation.scrollHeight;
+        }
+        
+        function updateSessionStatus(data = null) {
+            document.getElementById('sessionId').textContent = currentSession || 'Not started';
+            
+            if (data) {
+                const exchange = data.conversation_exchange || {};
+                const context = data.session_context || {};
+                
+                document.getElementById('messageCount').textContent = exchange.message_count || 0;
+                
+                // Update sentiment indicator
+                const sentiment = exchange.sentiment || 'neutral';
+                const sentimentSpan = document.getElementById('dominantSentiment');
+                sentimentSpan.textContent = sentiment;
+                sentimentSpan.className = `sentiment-indicator sentiment-${sentiment}`;
+                
+                // Update topics
+                const topics = context.main_topics || [];
+                document.getElementById('mainTopics').textContent = topics.join(', ') || 'None yet';
+            } else if (!currentSession) {
+                document.getElementById('messageCount').textContent = '0';
+                document.getElementById('sessionDuration').textContent = '00:00';
+                document.getElementById('dominantSentiment').textContent = 'Neutral';
+                document.getElementById('dominantSentiment').className = 'sentiment-indicator sentiment-neutral';
+                document.getElementById('mainTopics').textContent = 'None yet';
+            }
+        }
+        
+        function startDurationTimer() {
+            durationTimer = setInterval(() => {
+                if (sessionStartTime) {
+                    const duration = new Date() - sessionStartTime;
+                    const minutes = Math.floor(duration / 60000);
+                    const seconds = Math.floor((duration % 60000) / 1000);
+                    document.getElementById('sessionDuration').textContent = 
+                        `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                }
+            }, 1000);
+        }
+        
+        // Handle Enter key in text input
+        document.getElementById('messageInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendTextMessage();
+            }
+        });
+        
+        // Auto-start session on page load
+        window.onload = function() {
+            showSystemMessage('Welcome to AI Speech Therapist! Click "New Session" to begin.');
+        };
+    </script>
+</body>
+</html>

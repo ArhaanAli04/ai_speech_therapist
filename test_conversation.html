@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head><title>AI Therapist Test</title></head>
+<body>
+    <h1>AI Therapist Conversation Test</h1>
+    <div id="conversation" style="border: 1px solid #ccc; height: 400px; overflow-y: scroll; padding: 10px; margin-bottom: 10px;"></div>
+    <input type="text" id="messageInput" placeholder="Type your message..." style="width: 80%;">
+    <button onclick="sendMessage()">Send</button>
+    <button onclick="startNewSession()">New Session</button>
+    
+    <script>
+        let currentSessionId = null;
+        
+        async function startNewSession() {
+            const response = await fetch('http://localhost:5000/start-therapy-session', {method: 'POST'});
+            const data = await response.json();
+            currentSessionId = data.session_id;
+            addToConversation('AI', data.welcome_message);
+        }
+        
+        async function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+            if (!message) return;
+            
+            if (!currentSessionId) {
+                await startNewSession();
+            }
+            
+            addToConversation('You', message);
+            input.value = '';
+            
+            const response = await fetch('http://localhost:5000/text-therapy', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({text: message, session_id: currentSessionId})
+            });
+            
+            const data = await response.json();
+            addToConversation('AI', data.ai_response);
+            
+            document.getElementById('conversation').innerHTML += 
+                `<small>Message #${data.message_count} | Sentiment: ${data.nlp_analysis.sentiment.sentiment}</small><br><br>`;
+        }
+        
+        function addToConversation(speaker, message) {
+            const conversation = document.getElementById('conversation');
+            conversation.innerHTML += `<strong>${speaker}:</strong> ${message}<br><br>`;
+            conversation.scrollTop = conversation.scrollHeight;
+        }
+        
+        // Start first session automatically
+        startNewSession();
+    </script>
+</body>
+</html>

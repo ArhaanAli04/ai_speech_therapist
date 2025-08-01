@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head><title>Therapy Test</title></head>
+<body>
+    <h1>AI Therapist Test</h1>
+    <input type="text" id="userInput" placeholder="Enter your feelings..." style="width: 500px;" value="I have been feeling really anxious and stressed about my work lately and I do not know what to do">
+    <button onclick="testTherapy()">Get AI Response</button>
+    <div id="result" style="margin-top: 20px; padding: 20px; border: 1px solid #ccc;"></div>
+
+    <script>
+        async function testTherapy() {
+            const text = document.getElementById('userInput').value;
+            const response = await fetch('http://localhost:5000/therapy-response', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({text: text})
+            });
+            const result = await response.json();
+            
+            document.getElementById('result').innerHTML = `
+                <h3>AI Therapist Response:</h3>
+                <p><strong>"${result.therapy_response}"</strong></p>
+                <hr>
+                <p><strong>Detected Sentiment:</strong> ${result.nlp_analysis.sentiment.sentiment} (${(result.nlp_analysis.sentiment.confidence * 100).toFixed(1)}% confidence)</p>
+                <p><strong>Topic:</strong> ${result.nlp_analysis.topic_category}</p>
+                <p><strong>Keywords:</strong> ${JSON.stringify(result.nlp_analysis.keywords)}</p>
+            `;
+        }
+    </script>
+</body>
+</html>

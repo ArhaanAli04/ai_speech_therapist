@@ -1,0 +1,10 @@
+flask
+SpeechRecognition
+pyttsx3
+pyaudio
+transformers
+torch
+requests
+textblob
+nltk
+numpy
